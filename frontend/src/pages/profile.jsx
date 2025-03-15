@@ -5,7 +5,6 @@ import {
   SimpleGrid,
   Heading,
   Badge,
-  VStack,
   Flex,
   Modal,
   ModalOverlay,

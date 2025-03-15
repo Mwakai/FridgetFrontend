@@ -29,13 +29,18 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
 
+    const formattedData = {
+      userId: form.userId,
+      password: form.userPassword,
+    };
+
     try {
-      const response = await fetch("http://localhost:8080/doLogin", {
+      const response = await fetch("http://localhost:5000/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formattedData),
       });
 
       const data = await response.json();
@@ -44,9 +49,8 @@ const LoginPage = () => {
         throw new Error(data.message || "Login failed");
       }
 
-      login(data.result.token, data.result.userId);
+      login(data.token, data.userId);
       navigate("/home");
-      console.log("Login successful, token stored");
     } catch (err) {
       setError(err.message);
     }

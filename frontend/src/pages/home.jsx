@@ -29,8 +29,6 @@ const Home = () => {
     !localStorage.getItem("homeLoaded")
   );
 
-
-
   const [imageUrls, setImageUrls] = useState([]);
 
   const [recipes, setRecipes] = useState([]); // Stores API recipes
@@ -47,19 +45,19 @@ const Home = () => {
   const [temp, setTemp] = useState([]);
 
   // Search images based on menuName
-  const searchImages = async (menuName) => {
-    if (!menuName) return null;
-    try {
-      const query = encodeURIComponent(menuName);
+  // const searchImages = async (menuName) => {
+  //   if (!menuName) return null;
+  //   try {
+  //     const query = encodeURIComponent(menuName);
 
-      const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${query}&searchType=image`;
-      const response = await axios.get(apiUrl);
-      return response.data.items?.[0]?.link || null;
-    } catch (error) {
-      console.error("Error fetching images:", error);
-      return null;
-    }
-  };
+  //     const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${query}&searchType=image`;
+  //     const response = await axios.get(apiUrl);
+  //     return response.data.items?.[0]?.link || null;
+  //   } catch (error) {
+  //     console.error("Error fetching images:", error);
+  //     return null;
+  //   }
+  // };
 
   const fetchRecipes = async () => {
     try {
@@ -87,15 +85,15 @@ const Home = () => {
   const fetchImagesForMenuItems = async () => {
     if (recipes.length === 0) return; // Ensure recipes are available
 
-    const updatedItems = await Promise.all(
-      recipes.map(async (item) => {
-        const imgUrl = await searchImages(item.name);
-        return { ...item, img: imgUrl || item.img };
-      })
-    );
+    // const updatedItems = await Promise.all(
+    //   recipes.map(async (item) => {
+    //     const imgUrl = await searchImages(item.name);
+    //     return { ...item, img: imgUrl || item.img };
+    //   })
+    // );
 
     // setRecipes(updatedItems);
-    setTemp(updatedItems);
+    // setTemp(updatedItems);
   };
 
   const [fetchCount, setFetchCount] = useState(0);

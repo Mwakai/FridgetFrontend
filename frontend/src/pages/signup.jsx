@@ -12,12 +12,6 @@ import {
   RadioGroup,
   Radio,
   Stack,
-  CheckboxGroup,
-  Checkbox,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Flex,
   CloseButton,
 } from "@chakra-ui/react";
@@ -28,17 +22,17 @@ import { ToastContainer, toast } from "react-toastify";
 const SignupPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    name: "",
+    firstName: "",
     userId: "",
-    userPassword: "",
+    password: "",
     confirmPassword: "",
-    vegan: "",
-    alergy: [],
-    meatConsumption: 1,
-    fishConsumption: 1,
-    vegeConsumption: 1,
-    cookingMethod: [],
-    spiciness: 1,
+    veganOptions: false,
+    allergies: [], // ✅ Use the correct spelling
+    meatConsumption: "None",
+    fishConsumption: "None",
+    vegetableConsumption: "None",
+    spiciness: "None",
+    allergyInput: "", // ✅ Add missing state for input field
   });
 
   const handleChange = (e) => {
@@ -51,11 +45,14 @@ const SignupPage = () => {
   };
 
   const handleAddAllergy = () => {
-    if (form.allergyInput.trim() && !form.alergy.includes(form.allergyInput)) {
+    if (
+      form.allergyInput.trim() &&
+      !form.allergies.includes(form.allergyInput)
+    ) {
       setForm({
         ...form,
-        alergy: [...form.alergy, form.allergyInput],
-        allergyInput: "", // Clear input after adding
+        allergies: [...form.allergies, form.allergyInput], // ✅ Use correct key
+        allergyInput: "", // ✅ Clear input after adding
       });
     }
   };
@@ -63,7 +60,7 @@ const SignupPage = () => {
   const handleRemoveAllergy = (allergy) => {
     setForm({
       ...form,
-      alergy: form.alergy.filter((item) => item !== allergy),
+      allergies: form.allergies.filter((item) => item !== allergy), // ✅ Use correct key
     });
   };
 
@@ -72,16 +69,33 @@ const SignupPage = () => {
     console.log("form: ", form);
 
     if (form.userPassword !== form.confirmPassword) {
+      toast.error("Passwords do not match!", {
+        position: "bottom-right",
+        autoClose: 4000,
+      });
       return;
     }
 
+    // Format data correctly for backend
+    const formattedData = {
+      firstName: form.name,
+      userId: form.userId,
+      password: form.userPassword,
+      veganOptions: form.veganOptions,
+      allergies: form.allergies,
+      meatConsumption: form.meatConsumption, // Enum values
+      fishConsumption: form.fishConsumption,
+      vegetableConsumption: form.vegetableConsumption,
+      spiciness: form.spiciness,
+    };
+
     try {
-      const response = await fetch("http://localhost:8080/user/create", {
+      const response = await fetch("http://localhost:5000/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formattedData),
       });
 
       const data = await response.json();
@@ -89,15 +103,17 @@ const SignupPage = () => {
       if (!response.ok) {
         throw new Error(data.message || "Signup failed");
       }
+
       toast.success("Sign up complete!", {
         position: "bottom-right",
         autoClose: 4000,
       });
+
       setTimeout(() => {
         navigate("/login");
       }, 2000);
     } catch (error) {
-      toast.error("Failed to fetch ingredients!", {
+      toast.error(error.message || "Signup failed!", {
         position: "bottom-right",
         autoClose: 4000,
       });
@@ -189,8 +205,8 @@ const SignupPage = () => {
           </FormControl>
           {/* Allergies */}
           <HStack spacing={2} align="stretch">
-            {form.alergy.length > 0 ? (
-              form.alergy.map((allergy, index) => (
+            {form.allergies.length > 0 ? (
+              form.allergies.map((allergy, index) => (
                 <Flex
                   key={index}
                   bg="white"
@@ -217,17 +233,14 @@ const SignupPage = () => {
             <FormLabel>Meat Consumption</FormLabel>
             <RadioGroup
               name="meatConsumption"
-              value={form.meatConsumption.toString()}
-              onChange={(value) =>
-                handleSelectChange("meatConsumption", parseInt(value))
-              }
+              value={form.meatConsumption}
+              onChange={(value) => handleSelectChange("meatConsumption", value)}
             >
               <Stack direction="row">
-                <Radio value="1">Never</Radio>
-                <Radio value="2">Rarely</Radio>
-                <Radio value="3">Occasionally</Radio>
-                <Radio value="4">Frequently</Radio>
-                <Radio value="5">Daily</Radio>
+                <Radio value="None">None</Radio>
+                <Radio value="Low">Low</Radio>
+                <Radio value="Moderate">Moderate</Radio>
+                <Radio value="High">High</Radio>
               </Stack>
             </RadioGroup>
           </FormControl>
@@ -235,35 +248,31 @@ const SignupPage = () => {
             <FormLabel>Fish Consumption</FormLabel>
             <RadioGroup
               name="fishConsumption"
-              value={form.fishConsumption.toString()}
-              onChange={(value) =>
-                handleSelectChange("fishConsumption", parseInt(value))
-              }
+              value={form.fishConsumption}
+              onChange={(value) => handleSelectChange("fishConsumption", value)}
             >
               <Stack direction="row">
-                <Radio value="1">Never</Radio>
-                <Radio value="2">Rarely</Radio>
-                <Radio value="3">Occasionally</Radio>
-                <Radio value="4">Frequently</Radio>
-                <Radio value="5">Daily</Radio>
+                <Radio value="None">None</Radio>
+                <Radio value="Low">Low</Radio>
+                <Radio value="Moderate">Moderate</Radio>
+                <Radio value="High">High</Radio>
               </Stack>
             </RadioGroup>
           </FormControl>
           <FormControl isRequired>
             <FormLabel>Vegetable Consumption</FormLabel>
             <RadioGroup
-              name="vegeConsumption"
-              value={form.vegeConsumption.toString()}
+              name="vegetableConsumption"
+              value={form.vegetableConsumption}
               onChange={(value) =>
-                handleSelectChange("vegeConsumption", parseInt(value))
+                handleSelectChange("vegetableConsumption", value)
               }
             >
               <Stack direction="row">
-                <Radio value="1">Never</Radio>
-                <Radio value="2">Rarely</Radio>
-                <Radio value="3">Occasionally</Radio>
-                <Radio value="4">Frequently</Radio>
-                <Radio value="5">Daily</Radio>
+                <Radio value="None">None</Radio>
+                <Radio value="Low">Low</Radio>
+                <Radio value="Moderate">Moderate</Radio>
+                <Radio value="High">High</Radio>
               </Stack>
             </RadioGroup>
           </FormControl>
@@ -272,17 +281,14 @@ const SignupPage = () => {
             <FormLabel>Spiciness</FormLabel>
             <RadioGroup
               name="spiciness"
-              value={form.spiciness.toString()}
-              onChange={(value) =>
-                handleSelectChange("spiciness", parseInt(value))
-              }
+              value={form.spiciness}
+              onChange={(value) => handleSelectChange("spiciness", value)}
             >
               <Stack direction="row">
-                <Radio value="1">1</Radio>
-                <Radio value="2">2</Radio>
-                <Radio value="3">3</Radio>
-                <Radio value="4">4</Radio>
-                <Radio value="5">5</Radio>
+                <Radio value="None">None</Radio>
+                <Radio value="Mild">Mild</Radio>
+                <Radio value="Medium">Medium</Radio>
+                <Radio value="Spicy">Spicy</Radio>
               </Stack>
             </RadioGroup>
           </FormControl>
