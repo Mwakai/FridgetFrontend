@@ -14,60 +14,88 @@ import {
   ModalBody,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { motion } from "framer-motion"; // Import Framer Motion
+import { useState, useEffect, useContext } from "react";
+import { motion } from "framer-motion";
+import AuthContext from "../context/AuthContext";
 
 const Profile = () => {
-  const userId = localStorage.getItem("userId") || "Guest"; // Get username from localStorage
+  const { user } = useContext(AuthContext);
+  const token = user?.token || localStorage.getItem("token");
 
-  const user = {
-    profilePic: "/logo192.png",
-    allergies: ["Gluten", "Peanuts", "Dairy"],
-    item: [
-      {
-        id: 1,
-        label: "Spaghetti Bolognese",
-        img: "/Spaghetti.webp",
-        ingredients: ["spaghetti", "beef", "tomato", "onion", "garlic"],
-        description:
-          "A classic Italian pasta dish made with a rich meat sauce.",
-        nutrition: {
-          calories: 500,
-          fat: "20g",
-          protein: "30g",
-          carbs: "60g",
-        },
-        steps: [
-          "Cook spaghetti according to package instructions.",
-          "Brown the beef in a pan.",
-          "Add tomatoes, onions, and garlic to the beef and simmer.",
-          "Mix the sauce with the spaghetti and serve.",
-        ],
+  const [profile, setProfile] = useState({
+    firstName: "",
+    allergies: [],
+  });
+
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const dummyRecipes = [
+    {
+      id: 1,
+      label: "Spaghetti Bolognese",
+      img: "/Spaghetti.webp",
+      ingredients: ["spaghetti", "beef", "tomato", "onion", "garlic"],
+      description: "A classic Italian pasta dish made with a rich meat sauce.",
+      nutrition: {
+        calories: 500,
+        fat: "20g",
+        protein: "30g",
+        carbs: "60g",
       },
-      {
-        id: 2,
-        label: "Chicken Curry",
-        img: "https://slowcookerfoodie.com/wp-content/uploads/2022/03/Spicy-Chicken-Curry-500x500.jpg",
-        ingredients: ["chicken", "onion", "garlic", "curry powder", "rice"],
-        description: "A flavorful and aromatic curry with tender chicken.",
-        nutrition: {
-          calories: 450,
-          fat: "15g",
-          protein: "35g",
-          carbs: "50g",
-        },
-        steps: [
-          "Cook rice as per package instructions.",
-          "Cook chicken and onion in a pan with curry powder.",
-          "Add garlic and simmer until fully cooked.",
-          "Serve chicken curry over rice.",
-        ],
+      steps: [
+        "Cook spaghetti according to package instructions.",
+        "Brown the beef in a pan.",
+        "Add tomatoes, onions, and garlic to the beef and simmer.",
+        "Mix the sauce with the spaghetti and serve.",
+      ],
+    },
+    {
+      id: 2,
+      label: "Chicken Curry",
+      img: "https://slowcookerfoodie.com/wp-content/uploads/2022/03/Spicy-Chicken-Curry-500x500.jpg",
+      ingredients: ["chicken", "onion", "garlic", "curry powder", "rice"],
+      description: "A flavorful and aromatic curry with tender chicken.",
+      nutrition: {
+        calories: 450,
+        fat: "15g",
+        protein: "35g",
+        carbs: "50g",
       },
-    ],
+      steps: [
+        "Cook rice as per package instructions.",
+        "Cook chicken and onion in a pan with curry powder.",
+        "Add garlic and simmer until fully cooked.",
+        "Serve chicken curry over rice.",
+      ],
+    },
+  ];
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/user/profile", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setProfile(data.user);
+      } else {
+        console.error("Failed to fetch profile:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+    }
   };
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  useEffect(() => {
+    if (token) {
+      fetchProfile();
+    }
+  }, [token]);
 
   const handleRecipeClick = (item) => {
     setSelectedRecipe(item);
@@ -89,7 +117,7 @@ const Profile = () => {
       >
         <Flex align="center">
           <Image
-            src={user.profilePic}
+            src="/logo192.png"
             alt="Profile Picture"
             boxSize="120px"
             borderRadius="full"
@@ -97,12 +125,12 @@ const Profile = () => {
           />
           <Box>
             <Text fontSize="2xl" fontWeight="bold" color="gray.700">
-              {userId}
+              {profile.firstName || "User"}
             </Text>
           </Box>
         </Flex>
 
-        {/* Allergies Section with Animation */}
+        {/* Allergies */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -113,8 +141,8 @@ const Profile = () => {
               Allergies
             </Text>
             <Flex gap={2} flexWrap="wrap">
-              {user.allergies.length > 0 ? (
-                user.allergies.map((allergy, index) => (
+              {profile.allergies.length > 0 ? (
+                profile.allergies.map((allergy, index) => (
                   <Badge key={index} colorScheme="red" fontSize="md" p={2}>
                     {allergy}
                   </Badge>
@@ -136,7 +164,7 @@ const Profile = () => {
         </Heading>
 
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-          {user.item.map((recipe, index) => (
+          {dummyRecipes.map((recipe, index) => (
             <motion.div
               key={recipe.id}
               initial={{ opacity: 0, y: 20 }}
@@ -149,10 +177,7 @@ const Profile = () => {
                 borderRadius="lg"
                 boxShadow="md"
                 cursor="pointer"
-                _hover={{
-                  boxShadow: "lg",
-                  transition: "0.2s",
-                }}
+                _hover={{ boxShadow: "lg", transition: "0.2s" }}
                 onClick={() => handleRecipeClick(recipe)}
               >
                 <Flex align="center">
@@ -186,7 +211,6 @@ const Profile = () => {
             <ModalHeader>{selectedRecipe.label}</ModalHeader>
             <ModalCloseButton />
             <ModalBody maxHeight="500px" overflowY="auto">
-              {/* Fixed Image Size */}
               <Image
                 src={selectedRecipe.img}
                 alt={selectedRecipe.label}
