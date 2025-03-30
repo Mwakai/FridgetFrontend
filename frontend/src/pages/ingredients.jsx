@@ -42,9 +42,9 @@ const FOOD_CATEGORIES = [
   "Frozen Foods",
 ];
 
-const FETCH_API_URL = "http://localhost:8080/user/ingredients";
-const ADD_API_URL = "http://localhost:8080/user/ingredients/create";
-const DELETE_API_URL = "http://localhost:8080/user/ingredients/delete";
+const FETCH_API_URL = "http://localhost:5000/user/ingredients";
+const ADD_API_URL = "http://localhost:5000/user/ingredients/create";
+const DELETE_API_URL = "http://localhost:5000/user/ingredients/delete";
 
 const Ingredients = () => {
   const { user } = useContext(AuthContext);

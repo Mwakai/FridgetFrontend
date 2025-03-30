@@ -23,8 +23,8 @@ import axios from "axios";
 import LoadingScreen from "../components/LoadingScreen";
 
 const Home = () => {
-  const API_URL = "http://localhost:8080/recipe/recommend";
-  const FETCH_API_URL = "http://localhost:8080/user/ingredients";
+  const API_URL = "http://localhost:5000/recipe/recommend";
+  const FETCH_API_URL = "http://localhost:5000/user/ingredients";
   const [isFirstLoad, setIsFirstLoad] = useState(
     !localStorage.getItem("homeLoaded")
   );
